@@ -1,0 +1,9 @@
+.godot/
+export_presets.cfg
+
+# Local AI-tooling, not part of the Godot project.
+.mcp/
+.agents/
+Modelfile
+ping.txt
+skills-lock.json
