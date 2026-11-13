@@ -1,0 +1,44 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://ui_entities/TestSandbox.gd" id="1_test"]
+[ext_resource type="PackedScene" path="res://ui_entities/EnemyView.tscn" id="2_enemy"]
+[ext_resource type="PackedScene" path="res://ui_entities/CardView.tscn" id="3_card"]
+
+[node name="TestSandbox" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_test")
+
+[node name="EnemyView" parent="." instance=ExtResource("2_enemy")]
+offset_left = 80.0
+offset_top = 80.0
+offset_right = 320.0
+offset_bottom = 400.0
+
+[node name="Card1" parent="." instance=ExtResource("3_card")]
+offset_left = 480.0
+offset_top = 120.0
+offset_right = 700.0
+offset_bottom = 420.0
+
+[node name="Card2" parent="." instance=ExtResource("3_card")]
+offset_left = 760.0
+offset_top = 120.0
+offset_right = 980.0
+offset_bottom = 420.0
+
+[node name="Card3" parent="." instance=ExtResource("3_card")]
+offset_left = 480.0
+offset_top = 480.0
+offset_right = 700.0
+offset_bottom = 780.0
+
+[node name="Card4" parent="." instance=ExtResource("3_card")]
+offset_left = 760.0
+offset_top = 480.0
+offset_right = 980.0
+offset_bottom = 780.0
