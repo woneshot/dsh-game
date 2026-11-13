@@ -1,12 +1,12 @@
 extends Control
 ## Authoritative battle state for the co-op fight, synchronized over RPC.
-## EnemyView/CardView are the partner's scenes; they are driven through their
-## documented method/signal contract via call()/connect() so this file does not
-## statically depend on those scripts.
+## EnemyView is instantiated in BattleScene.tscn; CardView is spawned here.
+## Both are driven through their documented method/signal contract via
+## call()/connect() so this file does not statically depend on their scripts.
 
 
-const EnemyViewScene: String = "res://ui_entities/EnemyView.tscn"
-const CardViewScene: String = "res://ui_entities/CardView.tscn"
+## Partner scene spawned once per skill card in the hand.
+const CardViewScene: PackedScene = preload("res://ui_entities/CardView.tscn")
 
 enum Phase { PLAYER, ENEMY, VICTORY, DEFEAT }
 
@@ -24,7 +24,6 @@ var _shield_by_peer: Dictionary = {}
 var _buff_by_peer: Dictionary = {}
 var _end_turn_peers: Dictionary = {}
 
-var _enemy_view: Node = null
 var _card_entries: Array[Dictionary] = []
 
 @onready var hp_label: Label = %HPLabel
@@ -32,7 +31,7 @@ var _card_entries: Array[Dictionary] = []
 @onready var phase_label: Label = %PhaseLabel
 @onready var boss_label: Label = %BossLabel
 @onready var end_turn_button: Button = %EndTurnButton
-@onready var enemy_container: Node = %EnemyContainer
+@onready var _enemy_view: Node = $UI/EnemyContainer/EnemyView
 @onready var hand_container: Node = %HandContainer
 
 
@@ -62,19 +61,9 @@ func _spawn_boss() -> void:
 	var boss: Dictionary = GameData.BOSSES.get(boss_id, {})
 	boss_max_hp = int(boss.get("max_hp", 80))
 	boss_hp = boss_max_hp
-	for child in enemy_container.get_children():
-		child.queue_free()
-	_enemy_view = null
-	if ResourceLoader.exists(EnemyViewScene):
-		var scene: PackedScene = load(EnemyViewScene) as PackedScene
-		_enemy_view = scene.instantiate()
-		enemy_container.add_child(_enemy_view)
+	if _enemy_view != null:
 		_enemy_view.call("setup", boss_id, boss_max_hp)
 		_enemy_view.call("update_state", boss_hp, 0, _intent_text())
-	else:
-		var label := Label.new()
-		label.text = "Enemy placeholder: %s" % boss.get("name", boss_id)
-		enemy_container.add_child(label)
 
 
 func _spawn_cards() -> void:
@@ -85,21 +74,11 @@ func _spawn_cards() -> void:
 		var skill_id: String = str(skill_id_raw)
 		var skill: Dictionary = GameData.SKILLS[skill_id]
 		var cost: int = int(skill.get("cost", 0))
-		var entry: Dictionary = {"skill_id": skill_id, "cost": cost}
-		if ResourceLoader.exists(CardViewScene):
-			var scene: PackedScene = load(CardViewScene) as PackedScene
-			var view: Node = scene.instantiate()
-			hand_container.add_child(view)
-			view.connect("card_clicked", _on_card_clicked)
-			view.call("setup", skill_id, skill.get("title", skill_id), cost, skill.get("description", ""), null)
-			entry["view"] = view
-		else:
-			var btn := Button.new()
-			btn.text = "%s (%d)" % [skill.get("title", skill_id), cost]
-			btn.pressed.connect(_on_card_clicked.bind(skill_id))
-			hand_container.add_child(btn)
-			entry["button"] = btn
-		_card_entries.append(entry)
+		var view: Node = CardViewScene.instantiate()
+		hand_container.add_child(view)
+		view.connect("card_clicked", _on_card_clicked)
+		view.call("setup", skill_id, skill.get("title", skill_id), cost, skill.get("description", ""), null)
+		_card_entries.append({"skill_id": skill_id, "cost": cost, "view": view})
 
 
 func _intent_text() -> String:
@@ -276,12 +255,8 @@ func _refresh_cards() -> void:
 	for entry in _card_entries:
 		var e: Dictionary = entry
 		var usable: bool = phase == Phase.PLAYER and local_energy >= int(e.get("cost", 0))
-		if e.has("view"):
-			var view: Node = e["view"]
-			view.call("set_usable", usable)
-		elif e.has("button"):
-			var button: Button = e["button"]
-			button.disabled = not usable
+		var view: Node = e["view"]
+		view.call("set_usable", usable)
 
 
 func _phase_text() -> String:
