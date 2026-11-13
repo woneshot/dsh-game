@@ -198,10 +198,11 @@ func _resolve_enemy_attack() -> void:
 	_shield_by_peer[target] = shield - absorbed
 	player_hp = maxi(player_hp - (attack - absorbed), 0)
 	_reset_turn_state()
-	phase = Phase.PLAYER
-	_broadcast_state()
 	if player_hp <= 0:
 		_defeat()
+		return
+	phase = Phase.PLAYER
+	_broadcast_state()
 
 
 func _pick_target() -> int:
