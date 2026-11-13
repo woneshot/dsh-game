@@ -1,21 +1,26 @@
 class_name EnemyView
 extends Control
-## Enemy battle view: enemy sprite, HP bar, shield icon and intent label.
-## Contract for the co-op battler UI (used by the partner's battle scene).
+## Enemy battle view: sprite, HP bar, shield icon and intent label.
+## Contract for the co-op battler UI. All animations target the inner Body
+## node so they keep working when the view is parented inside a layout
+## container (BattleManager puts it in a VBoxContainer).
 
 const PLACEHOLDER_SIZE: int = 128
 
-@onready var _sprite: TextureRect = $VBox/EnemySprite
-@onready var _health_bar: ProgressBar = $VBox/HealthBar
-@onready var _shield_row: HBoxContainer = $VBox/ShieldRow
-@onready var _shield_icon: TextureRect = $VBox/ShieldRow/ShieldIcon
-@onready var _shield_label: Label = $VBox/ShieldRow/ShieldLabel
-@onready var _intent_label: Label = $VBox/IntentLabel
+@onready var _body: Control = $Body
+@onready var _sprite: TextureRect = $Body/VBox/EnemySprite
+@onready var _health_bar: ProgressBar = $Body/VBox/HealthBar
+@onready var _shield_row: HBoxContainer = $Body/VBox/ShieldRow
+@onready var _shield_icon: TextureRect = $Body/VBox/ShieldRow/ShieldIcon
+@onready var _shield_label: Label = $Body/VBox/ShieldRow/ShieldLabel
+@onready var _intent_label: Label = $Body/VBox/IntentLabel
 
 var _enemy_id: String = ""
 
 
 func _ready() -> void:
+	_sync_body_size()
+	resized.connect(_sync_body_size)
 	_shield_icon.texture = _make_shield_icon()
 	_shield_row.visible = false
 
@@ -49,12 +54,16 @@ func play_hit_anim(damage: int) -> void:
 
 ## Lunge down and back up.
 func play_attack_anim() -> void:
-	var origin := position
+	var origin := _body.position
 	var tween := create_tween()
-	tween.tween_property(self, "position", origin + Vector2(0.0, 28.0), 0.12) \
+	tween.tween_property(_body, "position", origin + Vector2(0.0, 28.0), 0.12) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_property(self, "position", origin, 0.16) \
+	tween.tween_property(_body, "position", origin, 0.16) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+
+func _sync_body_size() -> void:
+	_body.size = size
 
 
 func _load_enemy_texture(enemy_id: String) -> void:
@@ -86,19 +95,19 @@ func _color_from_id(id: String) -> Color:
 
 
 func _shake() -> void:
-	var origin := position
+	var origin := _body.position
 	var tween := create_tween()
 	var amp := 8.0
-	tween.tween_property(self, "position:x", origin.x - amp, 0.04)
-	tween.tween_property(self, "position:x", origin.x + amp, 0.04)
-	tween.tween_property(self, "position:x", origin.x - amp, 0.04)
-	tween.tween_property(self, "position:x", origin.x, 0.04)
+	tween.tween_property(_body, "position:x", origin.x - amp, 0.04)
+	tween.tween_property(_body, "position:x", origin.x + amp, 0.04)
+	tween.tween_property(_body, "position:x", origin.x - amp, 0.04)
+	tween.tween_property(_body, "position:x", origin.x, 0.04)
 
 
 func _flash_red() -> void:
 	var tween := create_tween()
-	tween.tween_property(self, "modulate", Color(1.6, 0.35, 0.35), 0.05)
-	tween.tween_property(self, "modulate", Color.WHITE, 0.2)
+	tween.tween_property(_body, "modulate", Color(1.6, 0.35, 0.35), 0.05)
+	tween.tween_property(_body, "modulate", Color.WHITE, 0.2)
 
 
 func _spawn_damage_number(damage: int) -> void:
@@ -107,8 +116,8 @@ func _spawn_damage_number(damage: int) -> void:
 	label.add_theme_font_size_override("font_size", 36)
 	label.add_theme_color_override("font_color", Color(1.0, 0.25, 0.25))
 	label.z_index = 10
-	add_child(label)
-	label.position = Vector2(size.x * 0.5 - 12.0, 0.0)
+	_body.add_child(label)
+	label.position = Vector2(_body.size.x * 0.5 - 12.0, 0.0)
 	var tween := create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(label, "position", label.position + Vector2(0.0, -70.0), 0.6)

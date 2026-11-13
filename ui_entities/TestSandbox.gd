@@ -1,7 +1,7 @@
 class_name TestSandbox
 extends Control
-## Test sandbox: instantiates one EnemyView and four CardViews, wires their
-## contract methods and drives the animations for a headless smoke test.
+## Test sandbox: instantiates one EnemyView and four CardViews, feeds them the
+## real GameData catalog and drives the animations for a headless smoke test.
 
 @onready var _enemy_view: EnemyView = $EnemyView
 @onready var _card_1: CardView = $Card1
@@ -18,19 +18,28 @@ func _ready() -> void:
 
 
 func _setup_enemy() -> void:
-	_enemy_view.setup("goblin_chief", 80)
-	_enemy_view.update_state(54, 12, "Heavy Blow")
+	if GameData.BOSS_SEQUENCE.is_empty():
+		return
+	var boss_id: String = GameData.BOSS_SEQUENCE[0]
+	var boss: Dictionary = GameData.BOSSES.get(boss_id, {})
+	var max_hp: int = int(boss.get("max_hp", 80))
+	_enemy_view.setup(boss_id, max_hp)
+	_enemy_view.update_state(int(max_hp * 0.6), 12, "Attack %d" % int(boss.get("attack", 8)))
 
 
 func _setup_cards() -> void:
-	_build_card(_card_1, "slash", "Slash", 1, "Deal 6 damage.")
-	_build_card(_card_2, "heavy_blow", "Heavy Blow", 2, "Deal 12 damage.")
-	_build_card(_card_3, "block", "Block", 1, "Gain 5 shield.")
-	_build_card(_card_4, "heal", "Heal", 2, "Restore 8 HP.")
+	var skill_ids: Array[String] = []
+	for key: Variant in GameData.SKILLS:
+		skill_ids.append(str(key))
+	var cards: Array[CardView] = [_card_1, _card_2, _card_3, _card_4]
+	for i in mini(cards.size(), skill_ids.size()):
+		_build_card(cards[i], skill_ids[i])
 
 
-func _build_card(card: CardView, skill_id: String, title: String, cost: int, desc: String) -> void:
-	card.setup(skill_id, title, cost, desc, null)
+func _build_card(card: CardView, skill_id: String) -> void:
+	var data: Dictionary = GameData.SKILLS[skill_id]
+	var cost: int = int(data.get("cost", 1))
+	card.setup(skill_id, str(data.get("title", skill_id)), cost, str(data.get("description", "")), null)
 	card.set_usable(cost <= 2)
 	card.card_clicked.connect(_on_card_clicked)
 
