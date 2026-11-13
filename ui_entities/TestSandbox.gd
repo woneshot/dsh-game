@@ -14,7 +14,18 @@ func _ready() -> void:
 	_setup_enemy()
 	_setup_cards()
 	_schedule_animations()
+	_simulate_card_interaction(_card_1)
 	print("TestSandbox ready: enemy + 4 cards configured.")
+
+
+## Deterministic smoke check for the CardView interaction path: hover tween
+## and click signal, without needing a real mouse in headless runs.
+func _simulate_card_interaction(card: CardView) -> void:
+	card.mouse_entered.emit()
+	var event := InputEventMouseButton.new()
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = true
+	card._gui_input(event)
 
 
 func _setup_enemy() -> void:

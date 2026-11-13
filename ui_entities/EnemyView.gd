@@ -1,11 +1,11 @@
 class_name EnemyView
 extends Control
 ## Enemy battle view: sprite, HP bar, shield icon and intent label.
-## Contract for the co-op battler UI. All animations target the inner Body
-## node so they keep working when the view is parented inside a layout
-## container (BattleManager puts it in a VBoxContainer).
+## Contract for the co-op battler UI. Animations target the inner Body node
+## so they survive being parented inside a layout container.
 
 const PLACEHOLDER_SIZE: int = 128
+const SHIELD_ICON_PATH: String = "res://assets/icons/shield.png"
 
 @onready var _body: Control = $Body
 @onready var _sprite: TextureRect = $Body/VBox/EnemySprite
@@ -21,7 +21,7 @@ var _enemy_id: String = ""
 func _ready() -> void:
 	_sync_body_size()
 	resized.connect(_sync_body_size)
-	_shield_icon.texture = _make_shield_icon()
+	_shield_icon.texture = _load_shield_icon()
 	_shield_row.visible = false
 
 
@@ -67,13 +67,21 @@ func _sync_body_size() -> void:
 
 
 func _load_enemy_texture(enemy_id: String) -> void:
-	var path := "res://assets/enemies/%s.png" % enemy_id
-	var texture: Texture2D = null
+	var texture := _load_texture("res://assets/enemies/%s.png" % enemy_id)
+	_sprite.texture = texture if texture != null else _make_placeholder_texture(enemy_id)
+
+
+func _load_shield_icon() -> Texture2D:
+	var texture := _load_texture(SHIELD_ICON_PATH)
+	return texture if texture != null else _make_shield_icon()
+
+
+func _load_texture(path: String) -> Texture2D:
 	if ResourceLoader.exists(path):
 		var res: Resource = load(path)
 		if res is Texture2D:
-			texture = res
-	_sprite.texture = texture if texture != null else _make_placeholder_texture(enemy_id)
+			return res
+	return null
 
 
 func _make_placeholder_texture(enemy_id: String) -> ImageTexture:

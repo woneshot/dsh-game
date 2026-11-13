@@ -24,7 +24,8 @@ theme_override_constants/separation = 8
 
 [node name="EnemySprite" type="TextureRect" parent="Body/VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(128, 128)
+custom_minimum_size = Vector2(180, 180)
+expand_mode = 1
 stretch_mode = 5
 
 [node name="HealthBar" type="ProgressBar" parent="Body/VBox"]
@@ -36,7 +37,9 @@ layout_mode = 2
 
 [node name="ShieldIcon" type="TextureRect" parent="Body/VBox/ShieldRow"]
 layout_mode = 2
-custom_minimum_size = Vector2(24, 24)
+custom_minimum_size = Vector2(28, 28)
+expand_mode = 1
+stretch_mode = 5
 
 [node name="ShieldLabel" type="Label" parent="Body/VBox/ShieldRow"]
 layout_mode = 2
