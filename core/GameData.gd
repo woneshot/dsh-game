@@ -31,19 +31,20 @@ const SKILLS: Dictionary = {
 }
 
 
-## Boss catalog, keyed by boss id.
+## Boss catalog, keyed by boss id. The id is also the texture name:
+## res://assets/enemies/{id}.png (enemy_1.png, enemy_2.png, enemy_3.png).
 const BOSSES: Dictionary = {
-	"goblin_chief": {
+	"enemy_1": {
 		"name": "Goblin Chief",
 		"max_hp": 80,
 		"attack": 8,
 	},
-	"iron_golem": {
+	"enemy_2": {
 		"name": "Iron Golem",
 		"max_hp": 120,
 		"attack": 10,
 	},
-	"shadow_wyvern": {
+	"enemy_3": {
 		"name": "Shadow Wyvern",
 		"max_hp": 150,
 		"attack": 12,
@@ -52,4 +53,4 @@ const BOSSES: Dictionary = {
 
 
 ## Bosses fought in this order during one run.
-const BOSS_SEQUENCE: Array[String] = ["goblin_chief", "iron_golem", "shadow_wyvern"]
+const BOSS_SEQUENCE: Array[String] = ["enemy_1", "enemy_2", "enemy_3"]
