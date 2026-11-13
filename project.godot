@@ -6,6 +6,7 @@ config_version=5
 [application]
 
 config/name="dsh game"
+run/main_scene="res://core/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [autoload]
